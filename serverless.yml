@@ -1,0 +1,76 @@
+service: dio-live-serverless-project
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: 
+          - 'dynamodb:PutItem'
+          - 'dynamodb:UpdateItem'
+          - 'dynamodb:GetItem'
+          - 'dynamodb:Scan'
+          - 'dynamodb:BatchGetItem'
+          - 'dynamodb:Query'
+          Resource: 
+          - arn:aws:dynamodb:us-east-1:537303710373:table/AlunosMonitoria
+
+
+functions:
+  api:
+    handler: src/index.handler
+    events:
+      - httpApi: '*'
+  insertItem: 
+    handler: src/insertItem.handler
+    events:
+      - http:
+          path: /item
+          method: post 
+  fetchItems:
+    handler: src/fetchItems.handler
+    events:
+      - http: 
+          path: /items
+          method: get 
+  fetchItem: 
+    handler: src/fetchItem.handler
+    events:
+      - http:
+          path: /items/{ra}
+          method: get
+  updateItem:
+    handler: src/updateItem.handler
+    events:
+      - http: 
+          path: /item/{ra}
+          method: put
+
+
+resources:
+  Resources:
+    AlunosMonitoria:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        AttributeDefinitions: 
+          -
+            AttributeName: "RA"
+            AttributeType: "N"
+          -
+            AttributeName: "Matéria"
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema: 
+          - 
+            AttributeName: "RA"
+            KeyType: "HASH"
+          -
+            AttributeName: "Matéria"
+            KeyType: "RANGE"
+        TableName: "AlunosMonitoria"
+
+        
